@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
-import 'package:smart_task_manager/features/tasks/domain/entities/sync_status.dart';
-import 'package:smart_task_manager/features/tasks/domain/entities/task_category.dart';
-import 'package:smart_task_manager/features/tasks/domain/entities/task_priority.dart';
+import 'package:smart_task_manager/domain/entities/sync_status.dart';
+import 'package:smart_task_manager/domain/entities/task_category.dart';
+import 'package:smart_task_manager/domain/entities/task_priority.dart';
 
 @DataClassName('TaskRow')
 class Tasks extends Table {

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_task_manager/core/di/injection.dart';
-import 'package:smart_task_manager/features/settings/presentation/settings_page.dart';
-import 'package:smart_task_manager/features/tasks/domain/entities/task_query.dart';
-import 'package:smart_task_manager/features/tasks/presentation/dashboard/dashboard_page.dart';
-import 'package:smart_task_manager/features/tasks/presentation/tasks/cubit/tasks_cubit.dart';
-import 'package:smart_task_manager/features/tasks/presentation/tasks/tasks_page.dart';
+import 'package:smart_task_manager/domain/entities/task_query.dart';
+import 'package:smart_task_manager/presentation/dashboard/dashboard_page.dart';
+import 'package:smart_task_manager/presentation/settings/settings_page.dart';
+import 'package:smart_task_manager/presentation/tasks/cubit/tasks_cubit.dart';
+import 'package:smart_task_manager/presentation/tasks/tasks_page.dart';
 
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});

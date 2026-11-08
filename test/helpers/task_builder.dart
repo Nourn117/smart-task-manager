@@ -1,7 +1,7 @@
-import 'package:smart_task_manager/features/tasks/domain/entities/sync_status.dart';
-import 'package:smart_task_manager/features/tasks/domain/entities/task.dart';
-import 'package:smart_task_manager/features/tasks/domain/entities/task_category.dart';
-import 'package:smart_task_manager/features/tasks/domain/entities/task_priority.dart';
+import 'package:smart_task_manager/domain/entities/sync_status.dart';
+import 'package:smart_task_manager/domain/entities/task.dart';
+import 'package:smart_task_manager/domain/entities/task_category.dart';
+import 'package:smart_task_manager/domain/entities/task_priority.dart';
 
 Task buildTask({
   String id = 'task-1',

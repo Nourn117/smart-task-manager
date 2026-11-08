@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_task_manager/core/di/injection.dart';
 import 'package:smart_task_manager/core/routing/app_router.dart';
 import 'package:smart_task_manager/core/theme/app_theme.dart';
-import 'package:smart_task_manager/features/settings/presentation/cubit/theme_cubit.dart';
+import 'package:smart_task_manager/presentation/settings/cubit/theme_cubit.dart';
 
 class SmartTaskManagerApp extends StatelessWidget {
   const SmartTaskManagerApp({super.key});

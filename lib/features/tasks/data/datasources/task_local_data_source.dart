@@ -102,10 +102,111 @@ class TaskLocalDataSource {
     return true;
   });
 
+  // ---------------------------------------------------------------------------
+  // Sync support
+  // ---------------------------------------------------------------------------
+
+  /// Pending operations, oldest first.
+  Future<List<SyncQueueEntry>> getPendingOperations() =>
+      _pendingOperationsStatement().get();
+
+  /// Emits the queue whenever it changes.
+  Stream<List<SyncQueueEntry>> watchPendingOperations() =>
+      _pendingOperationsStatement().watch();
+
+  /// Unlike [getTaskById], this includes deleted tasks (tombstones), which
+  /// still need their delete sent to the server.
+  Future<TaskRow?> getTaskForSync(String id) {
+    final statement = _db.select(_db.tasks)
+      ..where((task) => task.id.equals(id));
+    return statement.getSingleOrNull();
+  }
+
+  /// Records that [entry] reached the server.
+  ///
+  /// The task only becomes synced when nothing changed while it was uploading;
+  /// otherwise the newer change stays queued.
+  Future<void> completeOperation(SyncQueueEntry entry, {int? remoteId}) {
+    return _db.transaction(() async {
+      if (remoteId != null) {
+        await _updateTaskRow(
+          entry.taskId,
+          TasksCompanion(remoteId: Value(remoteId)),
+        );
+      }
+
+      final current = await _queueEntry(entry.taskId);
+      if (current == null) return;
+
+      if (current.enqueuedAt == entry.enqueuedAt) {
+        await _deleteQueueEntry(entry.taskId);
+        await _updateTaskRow(
+          entry.taskId,
+          const TasksCompanion(syncStatus: Value(SyncStatus.synced)),
+        );
+      } else if (current.operation == SyncOperation.create) {
+        // Edited while its create was uploading: the task now exists on the
+        // server, so send those edits as an update instead of a second create.
+        await _updateQueueEntry(
+          entry.taskId,
+          const SyncQueueCompanion(operation: Value(SyncOperation.update)),
+        );
+      }
+    });
+  }
+
+  /// Keeps [entry] queued for a retry and marks its task as failed.
+  Future<void> failOperation(SyncQueueEntry entry, String error) {
+    return _db.transaction(() async {
+      final current = await _queueEntry(entry.taskId);
+      // A newer change replaced this entry; it gets its own attempt.
+      if (current == null || current.enqueuedAt != entry.enqueuedAt) return;
+
+      await _updateQueueEntry(
+        entry.taskId,
+        SyncQueueCompanion(
+          attempts: Value(current.attempts + 1),
+          lastError: Value(error),
+        ),
+      );
+      await _updateTaskRow(
+        entry.taskId,
+        const TasksCompanion(syncStatus: Value(SyncStatus.failed)),
+      );
+    });
+  }
+
+  /// Stores remote tasks the device doesn't have yet and returns how many
+  /// were added. Tasks already stored, including deleted ones, are left
+  /// untouched so local changes are never overwritten.
+  Future<int> insertMissingRemoteTasks(List<TasksCompanion> tasks) {
+    return _db.transaction(() async {
+      var inserted = 0;
+      for (final task in tasks) {
+        final remoteId = task.remoteId.value;
+        if (remoteId == null) continue;
+
+        final existing = _db.select(_db.tasks)
+          ..where((row) => row.remoteId.equals(remoteId))
+          ..limit(1);
+        if (await existing.getSingleOrNull() != null) continue;
+
+        await _db.into(_db.tasks).insert(task);
+        inserted++;
+      }
+      return inserted;
+    });
+  }
+
   Future<void> _enqueue(String taskId, SyncOperation operation) async {
-    // A pending create uploads the latest saved state, so later edits fold into it.
+    // A pending create uploads the latest saved state, so later edits fold
+    // into it. Its timestamp still moves so an in-flight upload notices them.
     if (operation == SyncOperation.update &&
         await _pendingOperation(taskId) == SyncOperation.create) {
+      await _updateQueueEntry(
+        taskId,
+        SyncQueueCompanion(enqueuedAt: Value(_now())),
+      );
       return;
     }
 
@@ -127,10 +228,37 @@ class TaskLocalDataSource {
       ..where((task) => task.id.equals(id) & task.isDeleted.equals(false));
   }
 
-  Future<SyncOperation?> _pendingOperation(String taskId) async {
+  Future<SyncOperation?> _pendingOperation(String taskId) async =>
+      (await _queueEntry(taskId))?.operation;
+
+  Future<SyncQueueEntry?> _queueEntry(String taskId) {
     final statement = _db.select(_db.syncQueue)
       ..where((entry) => entry.taskId.equals(taskId));
-    return (await statement.getSingleOrNull())?.operation;
+    return statement.getSingleOrNull();
+  }
+
+  SimpleSelectStatement<$SyncQueueTable, SyncQueueEntry>
+  _pendingOperationsStatement() {
+    return _db.select(_db.syncQueue)
+      ..orderBy([(entry) => OrderingTerm.asc(entry.enqueuedAt)]);
+  }
+
+  Future<void> _updateQueueEntry(String taskId, SyncQueueCompanion changes) {
+    final statement = _db.update(_db.syncQueue)
+      ..where((entry) => entry.taskId.equals(taskId));
+    return statement.write(changes);
+  }
+
+  Future<void> _deleteQueueEntry(String taskId) {
+    final statement = _db.delete(_db.syncQueue)
+      ..where((entry) => entry.taskId.equals(taskId));
+    return statement.go();
+  }
+
+  Future<void> _updateTaskRow(String taskId, TasksCompanion changes) {
+    final statement = _db.update(_db.tasks)
+      ..where((task) => task.id.equals(taskId));
+    return statement.write(changes);
   }
 
   List<OrderClauseGenerator<$TasksTable>> _orderBy(TaskSortOption sortBy) {

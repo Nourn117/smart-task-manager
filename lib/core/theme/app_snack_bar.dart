@@ -4,18 +4,15 @@ extension AppSnackBar on BuildContext {
   /// Shows a short floating message, replacing any message already visible.
   void showMessage(String message, {bool isError = false}) {
     final colors = Theme.of(this).colorScheme;
-    final foreground = isError
-        ? colors.onErrorContainer
-        : colors.onInverseSurface;
+    final background = isError ? colors.error : colors.primary;
+    final foreground = isError ? colors.onError : colors.onPrimary;
 
     ScaffoldMessenger.of(this)
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
           duration: const Duration(seconds: 2),
-          backgroundColor: isError
-              ? colors.errorContainer
-              : colors.inverseSurface,
+          backgroundColor: background,
           content: Row(
             children: [
               Icon(

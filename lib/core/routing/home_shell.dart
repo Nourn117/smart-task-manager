@@ -1,11 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_task_manager/core/di/injection.dart';
-import 'package:smart_task_manager/features/settings/presentation/settings_page.dart';
-import 'package:smart_task_manager/features/tasks/domain/entities/task_query.dart';
-import 'package:smart_task_manager/features/tasks/presentation/dashboard/dashboard_page.dart';
-import 'package:smart_task_manager/features/tasks/presentation/tasks/cubit/tasks_cubit.dart';
-import 'package:smart_task_manager/features/tasks/presentation/tasks/tasks_page.dart';
+import 'package:smart_task_manager/domain/entities/task_query.dart';
+import 'package:smart_task_manager/presentation/dashboard/dashboard_page.dart';
+import 'package:smart_task_manager/presentation/settings/settings_page.dart';
+import 'package:smart_task_manager/presentation/sync/cubit/sync_cubit.dart';
+import 'package:smart_task_manager/presentation/sync/widgets/offline_banner.dart';
+import 'package:smart_task_manager/presentation/tasks/cubit/tasks_cubit.dart';
+import 'package:smart_task_manager/presentation/tasks/tasks_page.dart';
 
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
@@ -19,6 +23,17 @@ class _HomeShellState extends State<HomeShell> with RestorationMixin {
 
   final _selectedIndex = RestorableInt(0);
 
+  late final AppLifecycleListener _lifecycleListener;
+
+  @override
+  void initState() {
+    super.initState();
+    // Syncs whenever the app comes back to the foreground.
+    _lifecycleListener = AppLifecycleListener(
+      onResume: () => unawaited(context.read<SyncCubit>().syncNow()),
+    );
+  }
+
   @override
   String get restorationId => 'home_shell';
 
@@ -29,6 +44,7 @@ class _HomeShellState extends State<HomeShell> with RestorationMixin {
 
   @override
   void dispose() {
+    _lifecycleListener.dispose();
     _selectedIndex.dispose();
     super.dispose();
   }
@@ -59,24 +75,30 @@ class _HomeShellState extends State<HomeShell> with RestorationMixin {
               const SettingsPage(),
             ],
           ),
-          bottomNavigationBar: NavigationBar(
-            selectedIndex: _selectedIndex.value,
-            onDestinationSelected: _selectTab,
-            destinations: const [
-              NavigationDestination(
-                icon: Icon(Icons.dashboard_outlined),
-                selectedIcon: Icon(Icons.dashboard),
-                label: 'Dashboard',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.checklist_outlined),
-                selectedIcon: Icon(Icons.checklist),
-                label: 'Tasks',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.settings_outlined),
-                selectedIcon: Icon(Icons.settings),
-                label: 'Settings',
+          bottomNavigationBar: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const OfflineBanner(),
+              NavigationBar(
+                selectedIndex: _selectedIndex.value,
+                onDestinationSelected: _selectTab,
+                destinations: const [
+                  NavigationDestination(
+                    icon: Icon(Icons.dashboard_outlined),
+                    selectedIcon: Icon(Icons.dashboard),
+                    label: 'Dashboard',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.checklist_outlined),
+                    selectedIcon: Icon(Icons.checklist),
+                    label: 'Tasks',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.settings_outlined),
+                    selectedIcon: Icon(Icons.settings),
+                    label: 'Settings',
+                  ),
+                ],
               ),
             ],
           ),

@@ -8,6 +8,9 @@ abstract interface class TaskRepository {
 
   Stream<TaskSummary> watchSummary();
 
+  /// Emits null when the task does not exist or has been deleted.
+  Stream<Task?> watchTask(String id);
+
   Future<Result<Task>> getTaskById(String id);
 
   Future<Result<Task>> createTask(Task task);

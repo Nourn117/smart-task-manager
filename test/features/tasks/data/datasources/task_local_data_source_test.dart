@@ -197,6 +197,18 @@ void main() {
     });
   });
 
+  test('watchTaskById emits null once the task is deleted', () async {
+    await insertSyncedTask(buildTask(remoteId: 7));
+    expect(await dataSource.watchTaskById('task-1').first, isNotNull);
+
+    final emitsNull = expectLater(
+      dataSource.watchTaskById('task-1'),
+      emitsThrough(isNull),
+    );
+    await dataSource.deleteTask('task-1');
+    await emitsNull;
+  });
+
   test('watchSummary counts visible tasks only', () async {
     await dataSource.insertTask(buildTask(id: 'a').toCompanion());
     await dataSource.insertTask(

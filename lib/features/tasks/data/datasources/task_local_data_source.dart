@@ -54,11 +54,10 @@ class TaskLocalDataSource {
     );
   }
 
-  Future<TaskRow?> getTaskById(String id) {
-    final statement = _db.select(_db.tasks)
-      ..where((task) => task.id.equals(id) & task.isDeleted.equals(false));
-    return statement.getSingleOrNull();
-  }
+  Stream<TaskRow?> watchTaskById(String id) =>
+      _selectById(id).watchSingleOrNull();
+
+  Future<TaskRow?> getTaskById(String id) => _selectById(id).getSingleOrNull();
 
   Future<void> insertTask(TasksCompanion task) => _db.transaction(() async {
     await _db.into(_db.tasks).insert(task);
@@ -121,6 +120,11 @@ class TaskLocalDataSource {
             lastError: const Value(null),
           ),
         );
+  }
+
+  SimpleSelectStatement<$TasksTable, TaskRow> _selectById(String id) {
+    return _db.select(_db.tasks)
+      ..where((task) => task.id.equals(id) & task.isDeleted.equals(false));
   }
 
   Future<SyncOperation?> _pendingOperation(String taskId) async {

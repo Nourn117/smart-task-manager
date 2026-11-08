@@ -26,6 +26,10 @@ class TaskRepositoryImpl implements TaskRepository {
   );
 
   @override
+  Stream<Task?> watchTask(String id) =>
+      _localDataSource.watchTaskById(id).map((row) => row?.toEntity());
+
+  @override
   Future<Result<Task>> getTaskById(String id) => _guard(() async {
     final row = await _localDataSource.getTaskById(id);
     return row == null ? const Err(NotFoundFailure()) : Ok(row.toEntity());

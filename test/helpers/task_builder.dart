@@ -1,23 +1,33 @@
+import 'package:smart_task_manager/features/tasks/domain/entities/sync_status.dart';
 import 'package:smart_task_manager/features/tasks/domain/entities/task.dart';
 import 'package:smart_task_manager/features/tasks/domain/entities/task_category.dart';
 import 'package:smart_task_manager/features/tasks/domain/entities/task_priority.dart';
 
 Task buildTask({
   String id = 'task-1',
+  int? remoteId,
   String title = 'Task',
   String? description,
+  TaskPriority priority = TaskPriority.medium,
+  TaskCategory category = TaskCategory.work,
+  DateTime? dueDate,
   bool isCompleted = false,
+  DateTime? createdAt,
   DateTime? updatedAt,
+  SyncStatus syncStatus = SyncStatus.pending,
 }) {
-  final createdAt = DateTime(2026);
+  final created = createdAt ?? DateTime(2026);
   return Task(
     id: id,
+    remoteId: remoteId,
     title: title,
     description: description,
-    priority: TaskPriority.medium,
-    category: TaskCategory.work,
+    priority: priority,
+    category: category,
+    dueDate: dueDate,
     isCompleted: isCompleted,
-    createdAt: createdAt,
-    updatedAt: updatedAt ?? createdAt,
+    createdAt: created,
+    updatedAt: updatedAt ?? created,
+    syncStatus: syncStatus,
   );
 }

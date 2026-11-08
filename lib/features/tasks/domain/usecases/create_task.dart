@@ -8,7 +8,7 @@ import 'package:smart_task_manager/features/tasks/domain/repositories/task_repos
 
 class CreateTask {
   CreateTask(this._repository, {required this._generateId, Clock? now})
-      : _now = now ?? DateTime.now;
+    : _now = now ?? DateTime.now;
 
   final TaskRepository _repository;
   final IdGenerator _generateId;

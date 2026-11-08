@@ -116,11 +116,15 @@ class _TaskFormViewState extends State<TaskFormView> with RestorationMixin {
   }
 
   Future<void> _pickDueDate() async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final current = _dueDate.value;
     final picked = await showDatePicker(
       context: context,
-      initialDate: _dueDate.value ?? DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
+      // Past dates can't be picked; an overdue task's picker opens on today.
+      initialDate: current == null || current.isBefore(today) ? today : current,
+      firstDate: today,
+      lastDate: DateTime(now.year + 10),
     );
     if (picked == null || !mounted) return;
     setState(() => _dueDate.value = picked);

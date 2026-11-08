@@ -21,6 +21,7 @@ import 'package:smart_task_manager/domain/usecases/watch_task_summary.dart';
 import 'package:smart_task_manager/domain/usecases/watch_tasks.dart';
 import 'package:smart_task_manager/presentation/dashboard/cubit/dashboard_cubit.dart';
 import 'package:smart_task_manager/presentation/settings/cubit/theme_cubit.dart';
+import 'package:smart_task_manager/presentation/sync/cubit/sync_cubit.dart';
 import 'package:smart_task_manager/presentation/task_details/cubit/task_details_cubit.dart';
 import 'package:smart_task_manager/presentation/task_form/cubit/task_form_cubit.dart';
 import 'package:smart_task_manager/presentation/tasks/cubit/tasks_cubit.dart';
@@ -84,6 +85,9 @@ void _registerTaskUseCases() {
 void _registerCubits() {
   getIt
     ..registerFactory(ThemeCubit.new)
+    ..registerFactory(
+      () => SyncCubit(watchSyncOverview: getIt(), syncNow: getIt()),
+    )
     ..registerFactory(() => DashboardCubit(getIt(), getIt()))
     ..registerFactory(() => TasksCubit(getIt()))
     ..registerFactory(

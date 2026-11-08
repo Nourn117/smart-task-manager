@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_task_manager/presentation/settings/cubit/theme_cubit.dart';
+import 'package:smart_task_manager/presentation/sync/widgets/sync_status_card.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -62,6 +63,9 @@ class SettingsPage extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(height: 16),
+          const _SectionTitle(title: 'Connection & sync'),
+          const SyncStatusCard(),
         ],
       ),
     );

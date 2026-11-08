@@ -1,6 +1,10 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:smart_task_manager/core/network/network_info.dart';
 import 'package:smart_task_manager/features/tasks/data/datasources/task_local_data_source.dart';
+import 'package:smart_task_manager/features/tasks/data/datasources/task_remote_data_source.dart';
 import 'package:smart_task_manager/features/tasks/domain/repositories/task_repository.dart';
 import 'package:smart_task_manager/features/tasks/domain/usecases/create_task.dart';
 import 'package:smart_task_manager/features/tasks/domain/usecases/delete_task.dart';
@@ -14,10 +18,19 @@ import 'package:smart_task_manager/features/tasks/presentation/task_details/cubi
 import 'package:smart_task_manager/features/tasks/presentation/task_form/cubit/task_form_cubit.dart';
 import 'package:smart_task_manager/features/tasks/presentation/tasks/cubit/tasks_cubit.dart';
 
+// Core
+class MockConnectivity extends Mock implements Connectivity {}
+
+class MockDio extends Mock implements Dio {}
+
+class MockNetworkInfo extends Mock implements NetworkInfo {}
+
 // Data
 class MockTaskRepository extends Mock implements TaskRepository {}
 
 class MockTaskLocalDataSource extends Mock implements TaskLocalDataSource {}
+
+class MockTaskRemoteDataSource extends Mock implements TaskRemoteDataSource {}
 
 // Use cases
 class MockWatchTasks extends Mock implements WatchTasks {}

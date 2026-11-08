@@ -14,6 +14,7 @@ import 'package:smart_task_manager/features/tasks/domain/entities/task_priority.
 import 'package:smart_task_manager/features/tasks/domain/entities/task_query.dart';
 
 import '../../../../helpers/task_builder.dart';
+import '../../../../helpers/ticking_clock.dart';
 
 void main() {
   late AppDatabase database;
@@ -207,6 +208,85 @@ void main() {
     );
     await dataSource.deleteTask('task-1');
     await emitsNull;
+  });
+
+  group('sync queue', () {
+    late TaskLocalDataSource syncDataSource;
+
+    setUp(() {
+      // Distinct timestamps, so changes made during an upload are detected.
+      syncDataSource = TaskLocalDataSource(database, now: tickingClock());
+    });
+
+    test('returns pending operations oldest first', () async {
+      await syncDataSource.insertTask(buildTask(id: 'a').toCompanion());
+      await syncDataSource.insertTask(buildTask(id: 'b').toCompanion());
+
+      final pending = await syncDataSource.getPendingOperations();
+
+      expect(pending.map((entry) => entry.taskId), ['a', 'b']);
+    });
+
+    test(
+      'completing an operation removes it and marks the task synced',
+      () async {
+        await syncDataSource.insertTask(buildTask().toCompanion());
+        final entry = (await syncDataSource.getPendingOperations()).single;
+
+        await syncDataSource.completeOperation(entry, remoteId: 9);
+
+        final task = await syncDataSource.getTaskForSync('task-1');
+        expect(task?.remoteId, 9);
+        expect(task?.syncStatus, SyncStatus.synced);
+        expect(await syncDataSource.getPendingOperations(), isEmpty);
+      },
+    );
+
+    test('an edit made during an upload is kept as an update', () async {
+      await syncDataSource.insertTask(buildTask().toCompanion());
+      final uploading = (await syncDataSource.getPendingOperations()).single;
+      await syncDataSource.updateTask(buildTask(title: 'New').toCompanion());
+
+      await syncDataSource.completeOperation(uploading, remoteId: 9);
+
+      final pending = (await syncDataSource.getPendingOperations()).single;
+      expect(pending.operation, SyncOperation.update);
+      expect(
+        (await syncDataSource.getTaskForSync('task-1'))?.syncStatus,
+        SyncStatus.pending,
+      );
+    });
+
+    test(
+      'failing an operation keeps it queued and marks the task failed',
+      () async {
+        await syncDataSource.insertTask(buildTask().toCompanion());
+        final entry = (await syncDataSource.getPendingOperations()).single;
+
+        await syncDataSource.failOperation(entry, 'Server error');
+
+        final pending = (await syncDataSource.getPendingOperations()).single;
+        expect(pending.attempts, 1);
+        expect(pending.lastError, 'Server error');
+        expect(
+          (await syncDataSource.getTaskForSync('task-1'))?.syncStatus,
+          SyncStatus.failed,
+        );
+      },
+    );
+
+    test('inserts only remote tasks that are not stored yet', () async {
+      await insertSyncedTask(buildTask(id: 'mine', remoteId: 1));
+
+      final inserted = await syncDataSource.insertMissingRemoteTasks([
+        buildTask(id: 'dup', remoteId: 1).toCompanion(),
+        buildTask(id: 'new', remoteId: 2).toCompanion(),
+      ]);
+
+      expect(inserted, 1);
+      expect(await syncDataSource.getTaskForSync('dup'), isNull);
+      expect(await syncDataSource.getTaskForSync('new'), isNotNull);
+    });
   });
 
   test('watchSummary counts visible tasks only', () async {

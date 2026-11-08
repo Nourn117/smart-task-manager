@@ -32,6 +32,7 @@ class TasksView extends StatelessWidget {
         actions: const [TaskSortButton()],
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: null,
         tooltip: 'Add task',
         onPressed: () => context.openTaskForm(),
         child: const Icon(Icons.add),

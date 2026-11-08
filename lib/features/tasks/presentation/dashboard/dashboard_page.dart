@@ -46,6 +46,7 @@ class DashboardView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(_greeting())),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: null,
         onPressed: () => context.openTaskForm(),
         icon: const Icon(Icons.add),
         label: const Text('New task'),

@@ -9,11 +9,14 @@ import 'package:smart_task_manager/domain/repositories/task_repository.dart';
 import 'package:smart_task_manager/domain/usecases/create_task.dart';
 import 'package:smart_task_manager/domain/usecases/delete_task.dart';
 import 'package:smart_task_manager/domain/usecases/get_task_by_id.dart';
+import 'package:smart_task_manager/domain/usecases/sync_now.dart';
 import 'package:smart_task_manager/domain/usecases/toggle_task_completion.dart';
 import 'package:smart_task_manager/domain/usecases/update_task.dart';
+import 'package:smart_task_manager/domain/usecases/watch_sync_overview.dart';
 import 'package:smart_task_manager/domain/usecases/watch_task.dart';
 import 'package:smart_task_manager/domain/usecases/watch_task_summary.dart';
 import 'package:smart_task_manager/domain/usecases/watch_tasks.dart';
+import 'package:smart_task_manager/presentation/sync/cubit/sync_cubit.dart';
 import 'package:smart_task_manager/presentation/task_details/cubit/task_details_cubit.dart';
 import 'package:smart_task_manager/presentation/task_form/cubit/task_form_cubit.dart';
 import 'package:smart_task_manager/presentation/tasks/cubit/tasks_cubit.dart';
@@ -49,12 +52,18 @@ class MockToggleTaskCompletion extends Mock implements ToggleTaskCompletion {}
 
 class MockDeleteTask extends Mock implements DeleteTask {}
 
+class MockWatchSyncOverview extends Mock implements WatchSyncOverview {}
+
+class MockSyncNow extends Mock implements SyncNow {}
+
 // Cubits
 class MockTasksCubit extends Mock implements TasksCubit {}
 
 class MockTaskDetailsCubit extends Mock implements TaskDetailsCubit {}
 
 class MockTaskFormCubit extends Mock implements TaskFormCubit {}
+
+class MockSyncCubit extends Mock implements SyncCubit {}
 
 /// Makes a mocked cubit expose a fixed [state] to the widgets under test.
 void stubState<S>(BlocBase<S> cubit, S state) {

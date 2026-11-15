@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 
 abstract final class ApiConfig {
-  /// Override with `--dart-define=API_BASE_URL=...`.
   static const baseUrl = String.fromEnvironment(
     'API_BASE_URL',
     defaultValue: 'https://dummyjson.com',

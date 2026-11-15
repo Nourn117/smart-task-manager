@@ -7,12 +7,11 @@ import 'package:smart_task_manager/core/theme/app_snack_bar.dart';
 import 'package:smart_task_manager/domain/entities/task.dart';
 import 'package:smart_task_manager/domain/entities/task_category.dart';
 import 'package:smart_task_manager/domain/entities/task_priority.dart';
-import 'package:smart_task_manager/presentation/shared/utils/date_formatting.dart';
-import 'package:smart_task_manager/presentation/shared/utils/task_labels.dart';
 import 'package:smart_task_manager/presentation/shared/widgets/error_view.dart';
 import 'package:smart_task_manager/presentation/shared/widgets/loading_view.dart';
 import 'package:smart_task_manager/presentation/task_form/cubit/task_form_cubit.dart';
 import 'package:smart_task_manager/presentation/task_form/cubit/task_form_state.dart';
+import 'package:smart_task_manager/presentation/task_form/widgets/task_form_fields.dart';
 
 class TaskFormPage extends StatelessWidget {
   const TaskFormPage({super.key, this.taskId});
@@ -161,107 +160,24 @@ class _TaskFormViewState extends State<TaskFormView> with RestorationMixin {
             ),
             TaskFormStatus.ready ||
             TaskFormStatus.submitting ||
-            TaskFormStatus.saved => _buildForm(
+            TaskFormStatus.saved => TaskFormFields(
+              formKey: _formKey,
+              titleController: _title.value,
+              descriptionController: _description.value,
+              priority: _priority.value,
+              category: _category.value,
+              dueDate: _dueDate.value,
               isSubmitting: state.status != TaskFormStatus.ready,
+              onPriorityChanged: (priority) =>
+                  setState(() => _priority.value = priority),
+              onCategoryChanged: (category) =>
+                  setState(() => _category.value = category),
+              onPickDueDate: _pickDueDate,
+              onClearDueDate: () => setState(() => _dueDate.value = null),
+              onSubmit: _submit,
             ),
           },
         ),
-      ),
-    );
-  }
-
-  Widget _buildForm({required bool isSubmitting}) {
-    final sectionStyle = Theme.of(context).textTheme.titleSmall;
-    final dueDate = _dueDate.value;
-
-    return Form(
-      key: _formKey,
-      child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          TextFormField(
-            controller: _title.value,
-            decoration: const InputDecoration(labelText: 'Title'),
-            textCapitalization: TextCapitalization.sentences,
-            textInputAction: TextInputAction.next,
-            validator: (value) => (value == null || value.trim().isEmpty)
-                ? 'Title is required'
-                : null,
-          ),
-          const SizedBox(height: 16),
-          TextFormField(
-            controller: _description.value,
-            decoration: const InputDecoration(
-              labelText: 'Description (optional)',
-              alignLabelWithHint: true,
-            ),
-            textCapitalization: TextCapitalization.sentences,
-            minLines: 3,
-            maxLines: 5,
-          ),
-          const SizedBox(height: 24),
-          Text('Priority', style: sectionStyle),
-          const SizedBox(height: 8),
-          SegmentedButton<TaskPriority>(
-            segments: [
-              for (final priority in TaskPriority.values)
-                ButtonSegment(value: priority, label: Text(priority.label)),
-            ],
-            selected: {_priority.value},
-            onSelectionChanged: (selection) =>
-                setState(() => _priority.value = selection.first),
-          ),
-          const SizedBox(height: 24),
-          Text('Category', style: sectionStyle),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final category in TaskCategory.values)
-                ChoiceChip(
-                  avatar: Icon(category.icon, size: 18),
-                  label: Text(category.label),
-                  selected: _category.value == category,
-                  onSelected: (_) => setState(() => _category.value = category),
-                ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          Text('Due date', style: sectionStyle),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _pickDueDate,
-                  icon: const Icon(Icons.event_outlined),
-                  label: Text(
-                    dueDate == null
-                        ? 'No due date'
-                        : context.formatDate(dueDate),
-                  ),
-                ),
-              ),
-              if (dueDate != null)
-                IconButton(
-                  tooltip: 'Remove due date',
-                  icon: const Icon(Icons.close),
-                  onPressed: () => setState(() => _dueDate.value = null),
-                ),
-            ],
-          ),
-          const SizedBox(height: 32),
-          FilledButton(
-            onPressed: isSubmitting ? null : _submit,
-            child: isSubmitting
-                ? const SizedBox.square(
-                    dimension: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text('Save'),
-          ),
-        ],
       ),
     );
   }

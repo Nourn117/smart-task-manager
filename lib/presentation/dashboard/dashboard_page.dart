@@ -110,25 +110,6 @@ class _DashboardContent extends StatelessWidget {
       ),
     };
 
-    Widget summaryCard(
-      TaskStatusFilter status,
-      String label,
-      int value,
-      IconData icon,
-      Color color,
-    ) {
-      return Expanded(
-        child: SummaryCard(
-          label: label,
-          value: value,
-          icon: icon,
-          color: color,
-          isSelected: selectedStatus == status,
-          onTap: () => cubit.selectStatus(status),
-        ),
-      );
-    }
-
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
       children: [
@@ -136,28 +117,37 @@ class _DashboardContent extends StatelessWidget {
         const SizedBox(height: 12),
         Row(
           children: [
-            summaryCard(
-              TaskStatusFilter.all,
-              'Total',
-              summary.total,
-              Icons.list_alt,
-              colors.primary,
+            Expanded(
+              child: SummaryCard(
+                label: 'Total',
+                value: summary.total,
+                icon: Icons.list_alt,
+                color: colors.primary,
+                isSelected: selectedStatus == TaskStatusFilter.all,
+                onTap: () => cubit.selectStatus(TaskStatusFilter.all),
+              ),
             ),
             const SizedBox(width: 12),
-            summaryCard(
-              TaskStatusFilter.pending,
-              'Pending',
-              summary.pending,
-              Icons.pending_actions,
-              colors.tertiary,
+            Expanded(
+              child: SummaryCard(
+                label: 'Pending',
+                value: summary.pending,
+                icon: Icons.pending_actions,
+                color: colors.tertiary,
+                isSelected: selectedStatus == TaskStatusFilter.pending,
+                onTap: () => cubit.selectStatus(TaskStatusFilter.pending),
+              ),
             ),
             const SizedBox(width: 12),
-            summaryCard(
-              TaskStatusFilter.completed,
-              'Completed',
-              summary.completed,
-              Icons.check_circle_outline,
-              colors.secondary,
+            Expanded(
+              child: SummaryCard(
+                label: 'Completed',
+                value: summary.completed,
+                icon: Icons.check_circle_outline,
+                color: colors.secondary,
+                isSelected: selectedStatus == TaskStatusFilter.completed,
+                onTap: () => cubit.selectStatus(TaskStatusFilter.completed),
+              ),
             ),
           ],
         ),

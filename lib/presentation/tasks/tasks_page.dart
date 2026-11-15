@@ -17,13 +17,6 @@ class TasksPage extends StatelessWidget {
   const TasksPage({super.key});
 
   @override
-  Widget build(BuildContext context) => const TasksView();
-}
-
-class TasksView extends StatelessWidget {
-  const TasksView({super.key});
-
-  @override
   Widget build(BuildContext context) {
     final cubit = context.read<TasksCubit>();
     return Scaffold(

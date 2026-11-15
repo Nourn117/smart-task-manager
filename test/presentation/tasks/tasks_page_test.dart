@@ -15,20 +15,20 @@ void main() {
 
   setUp(() => cubit = MockTasksCubit());
 
-  Future<void> pumpTasksView(WidgetTester tester, TasksState state) async {
+  Future<void> pumpTasksPage(WidgetTester tester, TasksState state) async {
     stubState(cubit, state);
     await tester.pumpWidget(
       MaterialApp(
         home: BlocProvider<TasksCubit>.value(
           value: cubit,
-          child: const TasksView(),
+          child: const TasksPage(),
         ),
       ),
     );
   }
 
   testWidgets('renders the tasks', (tester) async {
-    await pumpTasksView(
+    await pumpTasksPage(
       tester,
       TasksState(
         status: TasksStatus.loaded,
@@ -44,7 +44,7 @@ void main() {
   });
 
   testWidgets('shows the empty state when there are no tasks', (tester) async {
-    await pumpTasksView(tester, const TasksState(status: TasksStatus.empty));
+    await pumpTasksPage(tester, const TasksState(status: TasksStatus.empty));
 
     expect(find.text('No tasks yet. Tap + to add one.'), findsOneWidget);
   });
@@ -52,7 +52,7 @@ void main() {
   testWidgets('shows a different empty state when filters are active', (
     tester,
   ) async {
-    await pumpTasksView(
+    await pumpTasksPage(
       tester,
       const TasksState(
         status: TasksStatus.empty,
@@ -64,7 +64,7 @@ void main() {
   });
 
   testWidgets('sends search input to the cubit', (tester) async {
-    await pumpTasksView(tester, const TasksState(status: TasksStatus.empty));
+    await pumpTasksPage(tester, const TasksState(status: TasksStatus.empty));
 
     await tester.enterText(find.byType(TextField), 'milk');
 
@@ -72,7 +72,7 @@ void main() {
   });
 
   testWidgets('filters by status when a chip is tapped', (tester) async {
-    await pumpTasksView(tester, const TasksState(status: TasksStatus.empty));
+    await pumpTasksPage(tester, const TasksState(status: TasksStatus.empty));
 
     await tester.tap(find.widgetWithText(ChoiceChip, 'Completed'));
 

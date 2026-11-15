@@ -37,7 +37,7 @@ void configureDependencies() {
 }
 
 /// Starts background synchronization. Call once after [configureDependencies].
-void startAutomaticSync() => getIt<SyncRepositoryImpl>().start();
+void startAutomaticSync() => getIt<SyncRepository>().start();
 
 String _generateId() => const Uuid().v4();
 
@@ -56,7 +56,7 @@ void _registerTaskData() {
     ..registerLazySingleton(() => TaskLocalDataSource(getIt()))
     ..registerLazySingleton(() => TaskRemoteDataSource(getIt()))
     ..registerLazySingleton<TaskRepository>(() => TaskRepositoryImpl(getIt()))
-    ..registerLazySingleton(
+    ..registerLazySingleton<SyncRepository>(
       () => SyncRepositoryImpl(
         localDataSource: getIt(),
         remoteDataSource: getIt(),
@@ -64,8 +64,7 @@ void _registerTaskData() {
         generateId: _generateId,
       ),
       dispose: (repository) => repository.dispose(),
-    )
-    ..registerLazySingleton<SyncRepository>(() => getIt<SyncRepositoryImpl>());
+    );
 }
 
 void _registerTaskUseCases() {

@@ -46,8 +46,7 @@ class SyncRepositoryImpl implements SyncRepository {
     yield* _overviewController.stream;
   }
 
-  /// Syncs automatically from now on: once at startup, whenever a local
-  /// change is queued and whenever connectivity returns.
+  @override
   void start() {
     _subscriptions
       ..add(_localDataSource.watchPendingOperations().listen(_onQueueChanged))
@@ -68,6 +67,7 @@ class SyncRepositoryImpl implements SyncRepository {
     return run;
   }
 
+  @override
   Future<void> dispose() async {
     for (final subscription in _subscriptions) {
       await subscription.cancel();

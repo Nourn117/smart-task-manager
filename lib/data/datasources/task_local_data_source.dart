@@ -102,10 +102,6 @@ class TaskLocalDataSource {
     return true;
   });
 
-  // ---------------------------------------------------------------------------
-  // Sync support
-  // ---------------------------------------------------------------------------
-
   /// Pending operations, oldest first.
   Future<List<SyncQueueEntry>> getPendingOperations() =>
       _pendingOperationsStatement().get();
